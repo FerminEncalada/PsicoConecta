@@ -11,9 +11,9 @@ pagos e inteligencia IoT tienen una base Flask preparada para su evolución.
 | --- | --- |
 | Frontend | React + Vite + TailwindCSS + Framer Motion |
 | Backend | Python Flask |
-| Autenticación | Amazon Cognito + JWT local para desarrollo |
-| Recuperación de contraseña | Gmail API |
-| Inicio de sesión con Google | Amazon Cognito |
+| Autenticación | JWT local + Google OAuth directo |
+| Recuperación de contraseña | Gmail API (sin SMTP) |
+| Inicio de sesión con Google | Directo desde Flask (@react-oauth/google) |
 | Base relacional | PostgreSQL con esquemas separados |
 | IoT y datos flexibles | DynamoDB |
 | Teleconsulta | Zoom API |
@@ -21,8 +21,7 @@ pagos e inteligencia IoT tienen una base Flask preparada para su evolución.
 | Almacenamiento | Amazon S3 |
 | Cloud | AWS |
 
-No se usa Node.js como backend, Gmail SMTP, OAuth directo de Google en Flask,
-MongoDB, Jitsi ni pagos reales.
+No se usa Node.js como backend, Gmail SMTP, MongoDB, Jitsi ni pagos reales.
 
 ## Arquitectura
 
@@ -158,16 +157,23 @@ GOOGLE_SENDER_EMAIL=
 FRONTEND_URL=http://localhost:5173
 ```
 
-## Google con Cognito
+## Inicio de sesión con Google (directo)
 
-El flujo previsto es:
+El flujo es:
 
 ```text
-Google -> Amazon Cognito -> JWT -> Backend Flask -> PostgreSQL
+@react-oauth/google (frontend) -> token ID -> Flask (verificación) -> PostgreSQL
 ```
 
-El frontend muestra la opción Google deshabilitada hasta configurar Cognito
-Hosted UI y el proveedor Google. Flask no implementa OAuth directo.
+El frontend usa `@react-oauth/google` y el backend verifica el token ID
+contra Google mediante `google-auth` y el endpoint `tokeninfo`.
+
+Variables requeridas:
+
+```env
+GOOGLE_LOGIN_CLIENT_ID=<web-client-id>
+VITE_GOOGLE_CLIENT_ID=<mismo-client-id>
+```
 
 ## Endpoints principales
 
@@ -179,6 +185,7 @@ Autenticación:
 - `POST /api/usuarios/autenticacion/recuperar-contrasena`
 - `POST /api/usuarios/autenticacion/restablecer-contrasena`
 - `GET /api/usuarios/autenticacion/mi-perfil`
+- `POST /api/usuarios/autenticacion/google`
 - `GET /api/usuarios/autenticacion/google/configuracion`
 
 Administración:

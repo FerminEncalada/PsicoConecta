@@ -1,18 +1,12 @@
-import { Navigate } from 'react-router-dom'
-import { useAutenticacion } from '../contexto/ContextoAutenticacion'
+import { Navigate, Outlet } from "react-router-dom";
+import { usarAutenticacion } from "../contexto/ContextoAutenticacion";
+import { rutaInicialPorRol } from "../servicios/servicioAutenticacion";
 
-export default function RutaRol({ roles, children }) {
-  const { usuario } = useAutenticacion()
-
-  if (!usuario) {
-    return <Navigate to="/iniciar-sesion" replace />
-  }
-
-  const tieneRol = usuario.rol && roles.includes(usuario.rol)
-
-  if (!tieneRol) {
-    return <Navigate to="/panel" replace />
-  }
-
-  return children
+export default function RutaRol({ roles }) {
+  const { usuario } = usarAutenticacion();
+  return roles.includes(usuario?.role) ? (
+    <Outlet />
+  ) : (
+    <Navigate to={rutaInicialPorRol(usuario?.role)} replace />
+  );
 }

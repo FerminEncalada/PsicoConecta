@@ -1,27 +1,26 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  darkMode: 'class',
+  darkMode: "class",
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+        arena: {
+          50: "#fdfbf7",
+          100: "#f7eedc",
+          200: "#ead7ad",
         },
+        bosque: {
+          500: "#148478",
+          600: "#0f766e",
+          700: "#115e59",
+          900: "#123c3a",
+        },
+      },
+      boxShadow: {
+        suave: "0 20px 55px rgba(15, 118, 110, 0.12)",
       },
     },
   },
   plugins: [],
-}
+};

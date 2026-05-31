@@ -1,19 +1,11 @@
-import { useAutenticacion } from '../../contexto/ContextoAutenticacion'
-
-export default function EncabezadoPanel({ titulo, descripcion }) {
-  const { usuario } = useAutenticacion()
-
+export default function EncabezadoPanel({ etiqueta, titulo, texto }) {
   return (
-    <div className="mb-8">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{titulo}</h1>
-      {descripcion && (
-        <p className="mt-1 text-gray-600 dark:text-gray-400">{descripcion}</p>
-      )}
-      {usuario && (
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Bienvenido, {usuario.nombres || usuario.correo}
-        </p>
-      )}
-    </div>
-  )
+    <header>
+      <p className="etiqueta">{etiqueta}</p>
+      <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+        {titulo}
+      </h1>
+      <p className="mt-3 max-w-3xl leading-7 text-slate-600 dark:text-slate-300">{texto}</p>
+    </header>
+  );
 }

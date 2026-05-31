@@ -1,31 +1,27 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-const ContextoTema = createContext()
+const ContextoTema = createContext(null);
 
-export function ContextoTemaProvider({ children }) {
+export function ProveedorTema({ children }) {
   const [oscuro, setOscuro] = useState(() => {
-    const guardado = localStorage.getItem('tema')
-    if (guardado) return guardado === 'oscuro'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  })
+    const temaGuardado = localStorage.getItem("psicoconecta_tema");
+    if (temaGuardado) return temaGuardado === "oscuro";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
   useEffect(() => {
-    if (oscuro) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-    localStorage.setItem('tema', oscuro ? 'oscuro' : 'claro')
-  }, [oscuro])
+    document.documentElement.classList.toggle("dark", oscuro);
+    localStorage.setItem("psicoconecta_tema", oscuro ? "oscuro" : "claro");
+  }, [oscuro]);
 
-  const toggleTema = () => setOscuro(prev => !prev)
+  const valor = useMemo(
+    () => ({ oscuro, alternarTema: () => setOscuro((actual) => !actual) }),
+    [oscuro],
+  );
 
-  return (
-    <ContextoTema.Provider value={{ oscuro, toggleTema }}>
-      {children}
-    </ContextoTema.Provider>
-  )
+  return <ContextoTema.Provider value={valor}>{children}</ContextoTema.Provider>;
 }
 
-export const useTema = () => useContext(ContextoTema)
-export default ContextoTema
+export function usarTema() {
+  return useContext(ContextoTema);
+}

@@ -1,154 +1,118 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAutenticacion } from '../../contexto/ContextoAutenticacion'
-import { getApiError } from '../../servicios/servicioAutenticacion'
-import PlantillaAutenticacion from '../../plantillas/PlantillaAutenticacion'
-import CampoFormulario from '../../componentes/CampoFormulario'
-import { GoogleLogin } from '@react-oauth/google'
-import { Mail, Lock, LogIn } from 'lucide-react'
+import { LogIn } from "lucide-react";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import CampoFormulario from "../../componentes/CampoFormulario";
+import { usarAutenticacion } from "../../contexto/ContextoAutenticacion";
+import {
+  rutaInicialPorRol,
+} from "../../servicios/servicioAutenticacion";
 
 export default function InicioSesion() {
-  const { iniciarSesion, googleLogin } = useAutenticacion()
-  const navigate = useNavigate()
-  const [datos, setDatos] = useState({ correo: '', contrasena: '' })
-  const [error, setError] = useState('')
-  const [googleError, setGoogleError] = useState('')
-  const [cargando, setCargando] = useState(false)
+  const [formulario, setFormulario] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [procesando, setProcesando] = useState(false);
+  const [googleError, setGoogleError] = useState("");
+  const { entrar, googleLogin } = usarAutenticacion();
+  const navegar = useNavigate();
+  const ubicacion = useLocation();
 
-  const manejarCambio = (e) => {
-    setDatos({ ...datos, [e.target.name]: e.target.value })
-    setError('')
-  }
+  const actualizar = ({ target }) => {
+    setFormulario((actual) => ({ ...actual, [target.name]: target.value }));
+  };
 
-  const manejarEnvio = async (e) => {
-    e.preventDefault()
-    setCargando(true)
-    setError('')
+  const enviar = async (evento) => {
+    evento.preventDefault();
+    setError("");
+    setProcesando(true);
     try {
-      const respuesta = await iniciarSesion(datos)
-      if (respuesta.redirigir) {
-        navigate(respuesta.redirigir)
-      } else {
-        navigate('/panel')
-      }
-    } catch (requestError) {
-      setError(getApiError(requestError))
+      const usuario = await entrar(formulario);
+      navegar(ubicacion.state?.from?.pathname || rutaInicialPorRol(usuario.role), {
+        replace: true,
+      });
+    } catch (excepcion) {
+      setError(excepcion.response?.data?.message || "No fue posible iniciar sesion.");
     } finally {
-      setCargando(false)
+      setProcesando(false);
     }
-  }
-
-  const manejarGoogleExito = async (response) => {
-    try {
-      setGoogleError('')
-      const respuesta = await googleLogin(response.credential)
-      if (respuesta.redirigir) {
-        navigate(respuesta.redirigir)
-      } else {
-        navigate('/panel')
-      }
-    } catch (requestError) {
-      setGoogleError(getApiError(requestError))
-    }
-  }
-
-  const manejarGoogleError = () => {
-    setGoogleError('No se pudo iniciar sesión con Google. Intenta de nuevo.')
-  }
+  };
 
   return (
-    <PlantillaAutenticacion
-      titulo="Iniciar sesión"
-      subtitulo="Accede a tu cuenta de PsicoConecta"
-    >
-      <form onSubmit={manejarEnvio} className="space-y-4">
-        {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg">
-            {error}
-          </div>
-        )}
-        <CampoFormulario label="Correo electrónico">
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="email"
-              name="correo"
-              value={datos.correo}
-              onChange={manejarCambio}
-              required
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-              placeholder="correo@unl.edu.ec"
-            />
-          </div>
-        </CampoFormulario>
-        <CampoFormulario label="Contraseña">
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="password"
-              name="contrasena"
-              value={datos.contrasena}
-              onChange={manejarCambio}
-              required
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-              placeholder="••••••••"
-            />
-          </div>
-        </CampoFormulario>
-        <button
-          type="submit"
-          disabled={cargando}
-          className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
-        >
-          {cargando ? (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-          ) : (
-            <LogIn className="h-4 w-4" />
-          )}
-          {cargando ? 'Iniciando sesión...' : 'Iniciar sesión'}
+    <>
+      <p className="etiqueta">Bienvenido de vuelta</p>
+      <h1 className="mt-3 text-3xl font-black text-slate-900 dark:text-white">
+        Inicia sesión
+      </h1>
+      <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+        Accede a tu espacio personal de PsicoConecta.
+      </p>
+
+      <form onSubmit={enviar} className="mt-7 space-y-4">
+        <CampoFormulario
+          etiqueta="Correo electronico"
+          name="email"
+          type="email"
+          value={formulario.email}
+          onChange={actualizar}
+          autoComplete="email"
+          required
+        />
+        <CampoFormulario
+          etiqueta="Contrasena"
+          name="password"
+          type="password"
+          value={formulario.password}
+          onChange={actualizar}
+          autoComplete="current-password"
+          required
+        />
+        {error && <p className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700 dark:bg-red-950/40 dark:text-red-200">{error}</p>}
+        <div className="flex justify-end">
+          <Link to="/recuperar-contrasena" className="text-sm font-bold text-bosque-600 hover:text-bosque-700 dark:text-teal-300 dark:hover:text-teal-200">
+            Olvidé mi contraseña
+          </Link>
+        </div>
+        <button type="submit" className="boton-primario w-full" disabled={procesando}>
+          <LogIn size={18} />
+          {procesando ? "Ingresando..." : "Ingresar"}
         </button>
       </form>
 
-      <div className="mt-4">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">O continúa con</span>
-          </div>
-        </div>
-
-        {googleError && (
-          <div className="mt-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg">
-            {googleError}
-          </div>
-        )}
-
-        <div className="mt-3 flex justify-center">
-          <GoogleLogin
-            onSuccess={manejarGoogleExito}
-            onError={manejarGoogleError}
-            size="large"
-            text="signin_with"
-            shape="rectangular"
-          />
-        </div>
+      <div className="my-6 flex items-center gap-3">
+        <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">o</span>
+        <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
       </div>
 
-      <div className="mt-6 text-center space-y-2 text-sm">
-        <p className="text-gray-600 dark:text-gray-400">
-          ¿No tienes cuenta?{' '}
-          <Link to="/registro" className="text-primary-600 dark:text-primary-400 hover:underline font-medium">
-            Registrarse
-          </Link>
-        </p>
-        <p className="text-gray-600 dark:text-gray-400">
-          <Link to="/recuperar-contrasena" className="text-primary-600 dark:text-primary-400 hover:underline font-medium">
-            ¿Olvidaste tu contraseña?
-          </Link>
-        </p>
+      {googleError && (
+        <p className="mb-2 text-center text-xs text-red-500">{googleError}</p>
+      )}
+      <div className="flex justify-center">
+        <GoogleLogin
+          onSuccess={async (response) => {
+            try {
+              setGoogleError("");
+              const usuario = await googleLogin(response.credential);
+              navegar(ubicacion.state?.from?.pathname || rutaInicialPorRol(usuario.role), {
+                replace: true,
+              });
+            } catch (e) {
+              setGoogleError(e.response?.data?.message || "Error al iniciar sesion con Google.");
+            }
+          }}
+          onError={() => setGoogleError("No se pudo iniciar sesion con Google.")}
+          size="large"
+          text="signin_with"
+          shape="rectangular"
+        />
       </div>
-    </PlantillaAutenticacion>
-  )
+
+      <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
+        ¿No tienes cuenta?{" "}
+        <Link to="/registro" className="font-bold text-bosque-600 dark:text-teal-300">
+          Regístrate
+        </Link>
+      </p>
+    </>
+  );
 }

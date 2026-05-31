@@ -1,23 +1,25 @@
-import PlantillaPanel from '../../plantillas/PlantillaPanel'
-import EncabezadoPanel from './EncabezadoPanel'
+import { Activity, CalendarDays, Video } from "lucide-react";
+import EncabezadoPanel from "./EncabezadoPanel";
+
+const modulos = [
+  { titulo: "Mis citas", texto: "Revisa y organiza tus proximas sesiones.", icono: CalendarDays },
+  { titulo: "Teleconsulta", texto: "Ingresa a tus sesiones remotas programadas.", icono: Video },
+  { titulo: "Mi bienestar", texto: "Registra tu seguimiento emocional.", icono: Activity },
+];
 
 export default function PanelPaciente() {
   return (
-    <PlantillaPanel>
-      <EncabezadoPanel
-        titulo="Panel del Paciente"
-        descripcion="Gestiona tus citas y sesiones psicológicas"
-      />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Mis Citas</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Consulta y gestiona tus citas programadas</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Historial</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Revisa el historial de tus sesiones</p>
-        </div>
-      </div>
-    </PlantillaPanel>
-  )
+    <>
+      <EncabezadoPanel etiqueta="Mi bienestar" titulo="Un espacio para avanzar a tu ritmo." texto="Encuentra tus herramientas personales y el seguimiento de tu proceso." />
+      <section className="mt-8 grid gap-4 md:grid-cols-3">
+        {modulos.map(({ titulo, texto, icono: Icono }) => (
+          <article key={titulo} className="panel p-6">
+            <Icono size={22} className="text-bosque-600 dark:text-teal-300" />
+            <h2 className="mt-5 text-lg font-black text-slate-900 dark:text-white">{titulo}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-300">{texto}</p>
+          </article>
+        ))}
+      </section>
+    </>
+  );
 }

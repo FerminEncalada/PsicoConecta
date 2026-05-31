@@ -1,79 +1,49 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import PlantillaAutenticacion from '../../plantillas/PlantillaAutenticacion'
-import CampoFormulario from '../../componentes/CampoFormulario'
-import { Mail, SendHorizonal } from 'lucide-react'
-import api from '../../servicios/api'
+import { Mail } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import CampoFormulario from "../../componentes/CampoFormulario";
+import { solicitarRecuperacion } from "../../servicios/servicioAutenticacion";
 
 export default function RecuperarContrasena() {
-  const [correo, setCorreo] = useState('')
-  const [mensaje, setMensaje] = useState('')
-  const [error, setError] = useState('')
-  const [cargando, setCargando] = useState(false)
+  const [email, setEmail] = useState("");
+  const [mensaje, setMensaje] = useState("");
+  const [error, setError] = useState("");
+  const [procesando, setProcesando] = useState(false);
 
-  const manejarEnvio = async (e) => {
-    e.preventDefault()
-    setCargando(true)
-    setError('')
-    setMensaje('')
+  const enviar = async (evento) => {
+    evento.preventDefault();
+    setError("");
+    setMensaje("");
+    setProcesando(true);
     try {
-      const respuesta = await api.post('/api/usuarios/autenticacion/recuperar-contrasena', { correo })
-      setMensaje(respuesta.data.message || 'Se ha enviado un enlace de recuperación a tu correo.')
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'No fue posible procesar la solicitud.')
+      const { data } = await solicitarRecuperacion(email);
+      setMensaje(data.message || "Revisa tu correo para continuar.");
+    } catch (excepcion) {
+      setError(excepcion.response?.data?.message || "No fue posible solicitar la recuperacion.");
     } finally {
-      setCargando(false)
+      setProcesando(false);
     }
-  }
+  };
 
   return (
-    <PlantillaAutenticacion
-      titulo="Recuperar contraseña"
-      subtitulo="Te enviaremos un enlace para restablecer tu contraseña"
-    >
-      <form onSubmit={manejarEnvio} className="space-y-4">
-        {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg">
-            {error}
-          </div>
-        )}
-        {mensaje && (
-          <div className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm p-3 rounded-lg">
-            {mensaje}
-          </div>
-        )}
-        <CampoFormulario label="Correo electrónico">
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="email"
-              value={correo}
-              onChange={(e) => { setCorreo(e.target.value); setError('') }}
-              required
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-              placeholder="correo@unl.edu.ec"
-            />
-          </div>
-        </CampoFormulario>
-        <button
-          type="submit"
-          disabled={cargando}
-          className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
-        >
-          {cargando ? (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-          ) : (
-            <SendHorizonal className="h-4 w-4" />
-          )}
-          {cargando ? 'Enviando...' : 'Enviar enlace'}
+    <>
+      <p className="etiqueta">Recuperación segura</p>
+      <h1 className="mt-3 text-3xl font-black text-slate-900 dark:text-white">Recupera tu acceso</h1>
+      <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+        Te enviaremos un enlace para restablecer tu contraseña.
+      </p>
+      <form onSubmit={enviar} className="mt-7 space-y-4">
+        <CampoFormulario etiqueta="Correo electrónico" type="email" value={email} onChange={(evento) => setEmail(evento.target.value)} required />
+        {mensaje && <p className="rounded-xl bg-teal-50 p-3 text-sm font-semibold text-teal-800 dark:bg-teal-950/50 dark:text-teal-200">{mensaje}</p>}
+        {error && <p className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700 dark:bg-red-950/40 dark:text-red-200">{error}</p>}
+        <button type="submit" className="boton-primario w-full" disabled={procesando}>
+          <Mail size={18} />
+          {procesando ? "Enviando..." : "Enviar enlace"}
         </button>
       </form>
-
-      <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-        <Link to="/iniciar-sesion" className="text-primary-600 dark:text-primary-400 hover:underline font-medium">
-          Volver a iniciar sesión
-        </Link>
-      </p>
-    </PlantillaAutenticacion>
-  )
+      <Link to="/iniciar-sesion" className="mt-6 block text-center text-sm font-bold text-bosque-600 dark:text-teal-300">
+        Volver al inicio de sesión
+      </Link>
+    </>
+  );
 }

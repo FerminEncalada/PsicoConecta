@@ -1,28 +1,33 @@
-import api from './api'
+import api from "./api";
 
-export const getApiError = (error) => error.response?.data?.message || 'No fue posible completar la solicitud.'
+const BASE = "/api/usuarios/autenticacion";
 
-export const iniciarSesionRequest = async (datos) => {
-  const respuesta = await api.post('/api/usuarios/autenticacion/iniciar-sesion', datos)
-  return respuesta.data
-}
+export const iniciarSesion = (credenciales) =>
+  api.post(`${BASE}/inicio-sesion`, credenciales);
 
-export const registrarRequest = async (datos) => {
-  const respuesta = await api.post('/api/usuarios/autenticacion/registro', datos)
-  return respuesta.data
-}
+export const registrarUsuario = (datos) => api.post(`${BASE}/registro`, datos);
 
-export const cerrarSesionRequest = async () => {
-  const respuesta = await api.post('/api/usuarios/autenticacion/cerrar-sesion')
-  return respuesta.data
-}
+export const cerrarSesion = () => api.post(`${BASE}/cierre-sesion`);
 
-export const verificarSesionRequest = async () => {
-  const respuesta = await api.get('/api/usuarios/autenticacion/verificar')
-  return respuesta.data
-}
+export const solicitarRecuperacion = (email) =>
+  api.post(`${BASE}/recuperar-contrasena`, { email });
 
-export const googleLoginRequest = async (credential) => {
-  const respuesta = await api.post('/api/usuarios/autenticacion/google', { credential })
-  return respuesta.data
-}
+export const restablecerContrasena = (datos) =>
+  api.post(`${BASE}/restablecer-contrasena`, datos);
+
+export const obtenerMiPerfil = () => api.get(`${BASE}/mi-perfil`);
+
+export const googleLoginRequest = (credential) =>
+  api.post(`${BASE}/google`, { credential });
+
+export const obtenerConfiguracionGoogle = () =>
+  api.get(`${BASE}/google/configuracion`);
+
+export const rutaInicialPorRol = (rol) => {
+  const rutas = {
+    ADMIN: "/administrador",
+    PSYCHOLOGIST: "/psicologo",
+    PATIENT: "/paciente",
+  };
+  return rutas[rol] || "/perfil";
+};

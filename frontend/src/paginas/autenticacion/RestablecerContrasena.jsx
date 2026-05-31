@@ -1,114 +1,48 @@
-import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import PlantillaAutenticacion from '../../plantillas/PlantillaAutenticacion'
-import CampoFormulario from '../../componentes/CampoFormulario'
-import { Lock, KeyRound } from 'lucide-react'
-import api from '../../servicios/api'
+import { KeyRound } from "lucide-react";
+import { useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import CampoFormulario from "../../componentes/CampoFormulario";
+import { restablecerContrasena } from "../../servicios/servicioAutenticacion";
 
 export default function RestablecerContrasena() {
-  const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
-  const token = searchParams.get('token')
-  const [datos, setDatos] = useState({ contrasena: '', confirmarContrasena: '' })
-  const [error, setError] = useState('')
-  const [mensaje, setMensaje] = useState('')
-  const [cargando, setCargando] = useState(false)
+  const [parametros] = useSearchParams();
+  const [password, setPassword] = useState("");
+  const [mensaje, setMensaje] = useState("");
+  const [error, setError] = useState("");
+  const [procesando, setProcesando] = useState(false);
+  const token = parametros.get("token") || "";
 
-  const manejarCambio = (e) => {
-    setDatos({ ...datos, [e.target.name]: e.target.value })
-    setError('')
-  }
-
-  const manejarEnvio = async (e) => {
-    e.preventDefault()
-    if (datos.contrasena !== datos.confirmarContrasena) {
-      setError('Las contraseñas no coinciden')
-      return
-    }
-    setCargando(true)
-    setError('')
+  const enviar = async (evento) => {
+    evento.preventDefault();
+    setError("");
+    setMensaje("");
+    setProcesando(true);
     try {
-      const respuesta = await api.post('/api/usuarios/autenticacion/restablecer-contrasena', {
-        token,
-        contrasena: datos.contrasena,
-      })
-      setMensaje(respuesta.data.message || 'Contraseña restablecida exitosamente.')
-      setTimeout(() => navigate('/iniciar-sesion'), 3000)
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'El enlace no es válido o ha expirado.')
+      const { data } = await restablecerContrasena({ token, password });
+      setMensaje(data.message || "Contrasena actualizada correctamente.");
+    } catch (excepcion) {
+      setError(excepcion.response?.data?.message || "El enlace no es valido o ya expiro.");
     } finally {
-      setCargando(false)
+      setProcesando(false);
     }
-  }
-
-  if (!token) {
-    return (
-      <PlantillaAutenticacion titulo="Enlace inválido" subtitulo="El enlace de recuperación no es válido">
-        <p className="text-center text-gray-600 dark:text-gray-400">
-          El enlace al que intentas acceder no es válido. Solicita un nuevo enlace de recuperación.
-        </p>
-      </PlantillaAutenticacion>
-    )
-  }
+  };
 
   return (
-    <PlantillaAutenticacion
-      titulo="Restablecer contraseña"
-      subtitulo="Ingresa tu nueva contraseña"
-    >
-      <form onSubmit={manejarEnvio} className="space-y-4">
-        {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg">
-            {error}
-          </div>
-        )}
-        {mensaje && (
-          <div className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm p-3 rounded-lg">
-            {mensaje}
-          </div>
-        )}
-        <CampoFormulario label="Nueva contraseña">
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="password"
-              name="contrasena"
-              value={datos.contrasena}
-              onChange={manejarCambio}
-              required
-              minLength={8}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-              placeholder="••••••••"
-            />
-          </div>
-        </CampoFormulario>
-        <CampoFormulario label="Confirmar contraseña">
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="password"
-              name="confirmarContrasena"
-              value={datos.confirmarContrasena}
-              onChange={manejarCambio}
-              required
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-              placeholder="••••••••"
-            />
-          </div>
-        </CampoFormulario>
-        <button
-          type="submit"
-          disabled={cargando || !!mensaje}
-          className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
-        >
-          {cargando ? (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-          ) : (
-            <KeyRound className="h-4 w-4" />
-          )}
-          {cargando ? 'Restableciendo...' : 'Restablecer contraseña'}
+    <>
+      <p className="etiqueta">Nuevo acceso</p>
+      <h1 className="mt-3 text-3xl font-black text-slate-900 dark:text-white">Crea una nueva contraseña</h1>
+      <form onSubmit={enviar} className="mt-7 space-y-4">
+        <CampoFormulario etiqueta="Nueva contraseña" type="password" value={password} onChange={(evento) => setPassword(evento.target.value)} minLength={8} required />
+        {mensaje && <p className="rounded-xl bg-teal-50 p-3 text-sm font-semibold text-teal-800 dark:bg-teal-950/50 dark:text-teal-200">{mensaje}</p>}
+        {error && <p className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700 dark:bg-red-950/40 dark:text-red-200">{error}</p>}
+        <button type="submit" className="boton-primario w-full" disabled={procesando || !token}>
+          <KeyRound size={18} />
+          {procesando ? "Actualizando..." : "Actualizar contraseña"}
         </button>
       </form>
-    </PlantillaAutenticacion>
-  )
+      <Link to="/iniciar-sesion" className="mt-6 block text-center text-sm font-bold text-bosque-600 dark:text-teal-300">
+        Volver al inicio de sesión
+      </Link>
+    </>
+  );
 }

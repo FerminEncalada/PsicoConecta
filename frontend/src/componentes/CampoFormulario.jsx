@@ -1,13 +1,16 @@
-export default function CampoFormulario({ label, error, children }) {
+export default function CampoFormulario({
+  etiqueta,
+  error,
+  className = "",
+  ...propiedades
+}) {
   return (
-    <div className="space-y-1">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {label}
-      </label>
-      {children}
-      {error && (
-        <p className="text-sm text-red-500">{error}</p>
-      )}
-    </div>
-  )
+    <label className={`block space-y-2 ${className}`}>
+      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+        {etiqueta}
+      </span>
+      <input className="campo" {...propiedades} />
+      {error && <span className="text-xs font-semibold text-red-600">{error}</span>}
+    </label>
+  );
 }

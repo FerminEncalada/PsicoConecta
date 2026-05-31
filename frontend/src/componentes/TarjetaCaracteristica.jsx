@@ -1,15 +1,17 @@
-export default function TarjetaCaracteristica({ icono, titulo, descripcion }) {
+import { motion } from "framer-motion";
+
+export default function TarjetaCaracteristica({ icono: Icono, titulo, texto }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg mb-4">
-        {icono}
-      </div>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-        {titulo}
-      </h3>
-      <p className="text-gray-600 dark:text-gray-400 text-sm">
-        {descripcion}
-      </p>
-    </div>
-  )
+    <motion.article
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.2 }}
+      className="panel p-6"
+    >
+      <span className="grid h-12 w-12 place-items-center rounded-2xl bg-teal-50 text-bosque-600 dark:bg-teal-950/60 dark:text-teal-300">
+        <Icono size={23} />
+      </span>
+      <h3 className="mt-5 text-lg font-black text-slate-900 dark:text-white">{titulo}</h3>
+      <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{texto}</p>
+    </motion.article>
+  );
 }

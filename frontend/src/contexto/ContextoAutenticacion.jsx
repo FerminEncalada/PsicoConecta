@@ -1,71 +1,71 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import { iniciarSesionRequest, verificarSesionRequest, cerrarSesionRequest, registrarRequest, googleLoginRequest } from '../servicios/servicioAutenticacion'
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  cerrarSesion,
+  googleLoginRequest,
+  iniciarSesion,
+  obtenerMiPerfil,
+  registrarUsuario,
+} from "../servicios/servicioAutenticacion";
 
-const ContextoAutenticacion = createContext()
+const ContextoAutenticacion = createContext(null);
 
-export function ContextoAutenticacionProvider({ children }) {
-  const [usuario, setUsuario] = useState(null)
-  const [cargando, setCargando] = useState(true)
+export function ProveedorAutenticacion({ children }) {
+  const [usuario, setUsuario] = useState(null);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    verificarSesion()
-  }, [])
-
-  const verificarSesion = async () => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        setCargando(false)
-        return
-      }
-      const respuesta = await verificarSesionRequest()
-      setUsuario(respuesta.usuario)
-    } catch {
-      localStorage.removeItem('token')
-    } finally {
-      setCargando(false)
+    const token = localStorage.getItem("psicoconecta_token");
+    if (!token) {
+      setCargando(false);
+      return;
     }
-  }
 
-  const iniciarSesion = async (datos) => {
-    const respuesta = await iniciarSesionRequest(datos)
-    localStorage.setItem('token', respuesta.token)
-    setUsuario(respuesta.usuario)
-    return respuesta
-  }
+    obtenerMiPerfil()
+      .then(({ data }) => setUsuario(data.user))
+      .catch(() => localStorage.removeItem("psicoconecta_token"))
+      .finally(() => setCargando(false));
+  }, []);
+
+  const entrar = async (credenciales) => {
+    const { data } = await iniciarSesion(credenciales);
+    localStorage.setItem("psicoconecta_token", data.access_token);
+    setUsuario(data.user);
+    return data.user;
+  };
 
   const registrar = async (datos) => {
-    const respuesta = await registrarRequest(datos)
-    localStorage.setItem('token', respuesta.token)
-    setUsuario(respuesta.usuario)
-    return respuesta
-  }
+    const { data } = await registrarUsuario(datos);
+    return data.user;
+  };
 
   const googleLogin = async (credential) => {
-    const respuesta = await googleLoginRequest(credential)
-    localStorage.setItem('token', respuesta.token)
-    setUsuario(respuesta.usuario)
-    return respuesta
-  }
+    const { data } = await googleLoginRequest(credential);
+    localStorage.setItem("psicoconecta_token", data.access_token);
+    setUsuario(data.user);
+    return data.user;
+  };
 
-  const cerrarSesion = async () => {
+  const salir = async () => {
     try {
-      await cerrarSesionRequest()
-    } catch {
+      await cerrarSesion();
     } finally {
-      localStorage.removeItem('token')
-      setUsuario(null)
+      localStorage.removeItem("psicoconecta_token");
+      setUsuario(null);
     }
-  }
+  };
+
+  const valor = useMemo(
+    () => ({ usuario, cargando, entrar, registrar, googleLogin, salir, setUsuario }),
+    [usuario, cargando],
+  );
 
   return (
-    <ContextoAutenticacion.Provider value={{
-      usuario, cargando, iniciarSesion, registrar, googleLogin, cerrarSesion, verificarSesion,
-    }}>
+    <ContextoAutenticacion.Provider value={valor}>
       {children}
     </ContextoAutenticacion.Provider>
-  )
+  );
 }
 
-export const useAutenticacion = () => useContext(ContextoAutenticacion)
-export default ContextoAutenticacion
+export function usarAutenticacion() {
+  return useContext(ContextoAutenticacion);
+}

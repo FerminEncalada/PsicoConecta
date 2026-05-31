@@ -1,50 +1,42 @@
-import { useAutenticacion } from '../contexto/ContextoAutenticacion'
-import RutaPrivada from '../componentes/RutaPrivada'
-import PlantillaPanel from '../plantillas/PlantillaPanel'
-import EncabezadoPanel from './paneles/EncabezadoPanel'
-import { User, Mail, Shield } from 'lucide-react'
-
-function PerfilContenido() {
-  const { usuario } = useAutenticacion()
-
-  return (
-    <div>
-      <EncabezadoPanel titulo="Mi Perfil" descripcion="Información de tu cuenta" />
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <User className="h-5 w-5 text-gray-400" />
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Nombres</p>
-              <p className="text-gray-900 dark:text-white font-medium">{usuario?.nombres || '—'}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Mail className="h-5 w-5 text-gray-400" />
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Correo</p>
-              <p className="text-gray-900 dark:text-white font-medium">{usuario?.correo || '—'}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Shield className="h-5 w-5 text-gray-400" />
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Rol</p>
-              <p className="text-gray-900 dark:text-white font-medium capitalize">{usuario?.rol || '—'}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+import { Mail, ShieldCheck, UserRound } from "lucide-react";
+import { usarAutenticacion } from "../contexto/ContextoAutenticacion";
+import EncabezadoPanel from "./paneles/EncabezadoPanel";
 
 export default function Perfil() {
+  const { usuario } = usarAutenticacion();
+
   return (
-    <RutaPrivada>
-      <PlantillaPanel>
-        <PerfilContenido />
-      </PlantillaPanel>
-    </RutaPrivada>
-  )
+    <>
+      <EncabezadoPanel
+        etiqueta="Mi cuenta"
+        titulo="Perfil personal"
+        texto="Consulta la informacion vinculada a tu cuenta de PsicoConecta."
+      />
+      <section className="panel mt-8 max-w-3xl p-6 sm:p-8">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+          <span className="grid h-20 w-20 place-items-center rounded-3xl bg-teal-50 text-bosque-600 dark:bg-teal-950/50 dark:text-teal-300">
+            <UserRound size={38} />
+          </span>
+          <div>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+              {usuario.first_name} {usuario.last_name}
+            </h2>
+            <p className="mt-1 text-sm font-bold text-bosque-600 dark:text-teal-300">{usuario.role}</p>
+          </div>
+        </div>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl bg-arena-50 p-4 dark:bg-slate-800/80">
+            <Mail size={19} className="text-bosque-600 dark:text-teal-300" />
+            <p className="mt-3 text-xs font-bold uppercase tracking-wider text-slate-400">Correo</p>
+            <p className="mt-1 break-all text-sm font-semibold">{usuario.email}</p>
+          </div>
+          <div className="rounded-2xl bg-arena-50 p-4 dark:bg-slate-800/80">
+            <ShieldCheck size={19} className="text-bosque-600 dark:text-teal-300" />
+            <p className="mt-3 text-xs font-bold uppercase tracking-wider text-slate-400">Estado</p>
+            <p className="mt-1 text-sm font-semibold">{usuario.status || "active"}</p>
+          </div>
+        </div>
+      </section>
+    </>
+  );
 }

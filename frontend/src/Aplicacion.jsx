@@ -1,7 +1,13 @@
-import RutasAplicacion from './rutas/RutasAplicacion'
+import { ProveedorAutenticacion } from "./contexto/ContextoAutenticacion";
+import { ProveedorTema } from "./contexto/ContextoTema";
+import RutasAplicacion from "./rutas/RutasAplicacion";
 
-function Aplicacion() {
-  return <RutasAplicacion />
+export default function Aplicacion() {
+  return (
+    <ProveedorTema>
+      <ProveedorAutenticacion>
+        <RutasAplicacion />
+      </ProveedorAutenticacion>
+    </ProveedorTema>
+  );
 }
-
-export default Aplicacion
